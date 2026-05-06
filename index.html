@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agente IA Privado · Menarguez-IA Agent Platform</title>
+<meta name="description" content="Arquitectura de agente IA privado, seguro y auditado. Tailscale · Docker · SOC Logging · Make. Menarguez-IA Solutions.">
+<meta name="theme-color" content="#14B8A6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #060a12;
+  --surface: #0b1120;
+  --card:    #111827;
+  --teal:    #0d9488;
+  --teal2:   #14b8a6;
+  --purple:  #7c3aed;
+  --amber:   #d97706;
+  --green:   #059669;
+  --coral:   #dc2626;
+  --blue:    #1d4ed8;
+  --white:   #f1f5f9;
+  --muted:   #64748b;
+  --border:  #1e293b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Syne',sans-serif;overflow-x:hidden}
+
+/* GRID BG */
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(13,148,136,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(13,148,136,.05) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 100% 100% at 50% 0%,black 20%,transparent 80%);
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 3rem;
+  background:rgba(6,10,18,.9);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  font-family:'Space Mono',monospace;font-size:.82rem;font-weight:700;
+  color:var(--teal);letter-spacing:.08em;text-decoration:none;
+}
+.logo span{color:var(--white)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  font-family:'Fira Code',monospace;font-size:.78rem;
+  color:var(--muted);text-decoration:none;transition:color .2s;
+}
+.nav-links a:hover{color:var(--teal)}
+.nav-btn{
+  background:var(--teal);color:#fff;border:none;
+  padding:.45rem 1.2rem;border-radius:4px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.8rem;
+  cursor:pointer;transition:background .2s;text-decoration:none;
+}
+.nav-btn:hover{background:var(--teal2)}
+
+/* HERO */
+.hero{
+  position:relative;min-height:100vh;
+  display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:3rem;
+  padding:8rem 3rem 5rem;max-width:1200px;margin:0 auto;
+}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0}
+.orb1{width:600px;height:600px;top:-150px;right:-150px;background:rgba(124,58,237,.12)}
+.orb2{width:500px;height:500px;bottom:-100px;left:-150px;background:rgba(13,148,136,.1)}
+
+.hero-left{position:relative;z-index:1}
+.badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(13,148,136,.08);border:1px solid rgba(13,148,136,.25);
+  border-radius:2rem;padding:.35rem 1rem;
+  font-family:'Fira Code',monospace;font-size:.72rem;color:var(--teal);
+  margin-bottom:1.5rem;
+  animation:fadeUp .5s ease both;
+}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+
+h1{
+  font-size:clamp(2.5rem,4.5vw,4rem);font-weight:800;line-height:1.08;
+  animation:fadeUp .5s .1s ease both;
+}
+h1 em{
+  font-style:normal;
+  background:linear-gradient(120deg,var(--teal),var(--teal2) 60%,#5eead4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  margin-top:1.2rem;
+  font-family:'Fira Code',monospace;font-size:.85rem;
+  color:var(--muted);line-height:1.8;
+  animation:fadeUp .5s .2s ease both;
+}
+.hero-actions{
+  display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap;
+  animation:fadeUp .5s .3s ease both;
+}
+.btn-p{
+  background:var(--teal);color:#fff;border:none;
+  padding:.75rem 1.8rem;border-radius:5px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;
+  cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;
+}
+.btn-p:hover{background:var(--teal2);transform:translateY(-2px)}
+.btn-g{
+  background:transparent;color:var(--white);
+  border:1px solid var(--border);
+  padding:.75rem 1.8rem;border-radius:5px;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:.88rem;
+  cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;
+}
+.btn-g:hover{border-color:var(--teal);color:var(--teal)}
+
+/* TERMINAL */
+.terminal{
+  position:relative;z-index:1;
+  animation:fadeUp .5s .4s ease both;
+}
+.term-win{
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 0 1px rgba(13,148,136,.08);
+}
+.term-bar{
+  background:var(--card);padding:.65rem 1rem;
+  display:flex;align-items:center;gap:.5rem;
+  border-bottom:1px solid var(--border);
+}
+.dots{display:flex;gap:.35rem}
+.dots i{width:10px;height:10px;border-radius:50%;display:block}
+.dots i:nth-child(1){background:#ff5f57}
+.dots i:nth-child(2){background:#febc2e}
+.dots i:nth-child(3){background:#28c840}
+.term-title{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--muted);margin-left:.4rem}
+.term-body{padding:1.2rem 1.4rem;font-family:'Fira Code',monospace;font-size:.77rem;line-height:1.9}
+.tc{color:#374151}.tk{color:var(--teal2)}.tv{color:#e2e8f0}
+.tg{color:#34d399}.ta{color:#fbbf24}.tp{color:#a78bfa}.tr{color:#f87171}
+.cursor{display:inline-block;width:7px;height:13px;background:var(--teal);animation:blink .9s step-end infinite;vertical-align:-2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* STATS */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.stat{
+  padding:2rem;text-align:center;
+  border-right:1px solid var(--border);
+  transition:background .2s;
+}
+.stat:last-child{border-right:none}
+.stat:hover{background:rgba(13,148,136,.04)}
+.stat-n{
+  font-size:2rem;font-weight:800;
+  background:linear-gradient(120deg,var(--teal),var(--teal2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-l{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--muted);margin-top:.3rem}
+
+/* SECTION BASE */
+section{padding:6rem 3rem;position:relative;z-index:1}
+.inner{max-width:1100px;margin:0 auto}
+.stag{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--teal);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.7rem}
+.stitle{font-size:clamp(1.7rem,3vw,2.4rem);font-weight:800;line-height:1.15}
+.stitle em{font-style:normal;color:var(--teal)}
+.ssub{font-family:'Fira Code',monospace;font-size:.82rem;color:var(--muted);margin-top:.8rem;line-height:1.8;max-width:600px}
+
+/* ARCHITECTURE */
+.arch-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.arch-header{text-align:center;margin-bottom:3rem}
+.arch-header .ssub{margin:0 auto}
+
+.arch-layers{display:flex;flex-direction:column;gap:0;max-width:800px;margin:0 auto}
+.layer{
+  display:flex;align-items:stretch;
+  border:1px solid var(--border);margin-bottom:-1px;
+  cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+}
+.layer::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--layer-color, var(--teal));
+  transform:scaleY(0);transition:transform .2s;transform-origin:bottom;
+}
+.layer:hover::before{transform:scaleY(1)}
+.layer:hover{background:rgba(255,255,255,.02);z-index:1}
+.layer:first-child{border-radius:8px 8px 0 0}
+.layer:last-child{border-radius:0 0 8px 8px}
+
+.layer-num{
+  min-width:60px;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;
+  color:var(--layer-color,var(--teal));
+  background:rgba(0,0,0,.2);border-right:1px solid var(--border);
+  padding:.8rem;
+}
+.layer-body{flex:1;padding:1rem 1.4rem}
+.layer-title{font-weight:700;font-size:.95rem;margin-bottom:.2rem}
+.layer-sub{font-family:'Fira Code',monospace;font-size:.75rem;color:var(--muted)}
+.layer-badge{
+  display:flex;align-items:center;padding:0 1.2rem;
+  font-family:'Fira Code',monospace;font-size:.68rem;
+  color:var(--layer-color,var(--teal));
+  white-space:nowrap;
+}
+
+/* FLOW */
+.flow-section{background:var(--bg)}
+.flow-grid{display:grid;grid-template-columns:1fr 280px;gap:2rem;align-items:start}
+.flow-steps{display:flex;flex-direction:column;gap:0}
+.fstep{
+  display:flex;gap:0;align-items:stretch;
+  position:relative;
+}
+.fstep-line{
+  display:flex;flex-direction:column;align-items:center;
+  min-width:48px;
+}
+.fstep-num{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:.75rem;font-weight:700;
+  background:var(--step-color,var(--teal));color:#fff;
+  flex-shrink:0;z-index:1;
+}
+.fstep-connector{flex:1;width:2px;background:var(--border);margin:.2rem 0}
+.fstep:last-child .fstep-connector{display:none}
+.fstep-content{
+  flex:1;padding:.5rem 1rem 1.2rem;
+}
+.fstep-title{font-weight:700;font-size:.95rem;margin-bottom:.2rem}
+.fstep-desc{font-family:'Fira Code',monospace;font-size:.75rem;color:var(--muted);line-height:1.6}
+
+.soc-panel{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;position:sticky;top:100px;
+}
+.soc-head{
+  background:var(--green);padding:.7rem 1rem;
+  font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;color:#fff;
+  letter-spacing:.05em;
+}
+.soc-body{padding:1rem;font-family:'Fira Code',monospace;font-size:.73rem;line-height:1.8}
+.soc-row{
+  display:flex;gap:.5rem;padding:.3rem 0;
+  border-bottom:1px solid var(--border);color:var(--muted);
+}
+.soc-row:last-child{border-bottom:none}
+.soc-row span:first-child{color:var(--green);flex-shrink:0}
+
+/* THREAT MODEL */
+.threat-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.threat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1rem;margin-top:2.5rem}
+.threat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:1.2rem 1.4rem;
+  position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s;
+}
+.threat-card:hover{transform:translateY(-3px);border-color:rgba(13,148,136,.3)}
+.threat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--tc,var(--teal));
+}
+.threat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.threat-name{font-weight:700;font-size:.92rem}
+.threat-badge{
+  font-family:'Fira Code',monospace;font-size:.65rem;font-weight:700;
+  padding:.2rem .55rem;border-radius:3px;
+  background:var(--tc,var(--teal));color:#fff;
+}
+.threat-attack{font-family:'Fira Code',monospace;font-size:.75rem;color:var(--muted);margin-bottom:.7rem;line-height:1.6}
+.threat-fix{font-family:'Fira Code',monospace;font-size:.75rem;color:#34d399;line-height:1.6}
+.threat-fix::before{content:'✓  '}
+
+/* STACK */
+.stack-section{background:var(--bg)}
+.stack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:2.5rem}
+.stack-cell{
+  background:var(--surface);padding:1.5rem;
+  transition:background .2s;
+}
+.stack-cell:hover{background:rgba(13,148,136,.05)}
+.stack-cat{
+  font-family:'Fira Code',monospace;font-size:.68rem;
+  color:var(--sc,var(--teal));letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:.8rem;
+}
+.stack-items{display:flex;flex-direction:column;gap:.5rem}
+.stack-item{
+  display:flex;align-items:center;gap:.6rem;
+  font-size:.85rem;font-weight:600;
+}
+.stack-item::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--sc,var(--teal));flex-shrink:0;
+}
+.stack-sub{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--muted);padding-left:1.1rem}
+
+/* ROADMAP */
+.road-section{background:var(--surface);border-top:1px solid var(--border)}
+.road-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:2.5rem}
+.road-phase{
+  background:var(--card);padding:1.5rem;
+  transition:background .2s;position:relative;
+}
+.road-phase:hover{background:rgba(13,148,136,.04)}
+.road-phase-head{
+  padding:.5rem .8rem;border-radius:4px;margin-bottom:1rem;
+  background:var(--rp,var(--teal));
+}
+.road-fase{font-weight:800;font-size:.82rem;color:#fff}
+.road-periodo{font-family:'Fira Code',monospace;font-size:.68rem;color:rgba(255,255,255,.7)}
+.road-title{font-weight:700;font-size:.9rem;margin-bottom:.8rem}
+.road-items{display:flex;flex-direction:column;gap:.45rem}
+.road-item{font-family:'Fira Code',monospace;font-size:.73rem;color:var(--muted);display:flex;gap:.5rem;align-items:flex-start}
+.road-item::before{content:'→';color:var(--rp,var(--teal));flex-shrink:0}
+
+/* CTA */
+.cta-section{
+  background:var(--bg);border-top:1px solid var(--border);
+  text-align:center;padding:7rem 3rem;
+}
+.cta-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:1rem}
+.cta-title em{font-style:normal;color:var(--teal)}
+.cta-sub{font-family:'Fira Code',monospace;font-size:.85rem;color:var(--muted);margin-bottom:2rem;line-height:1.8}
+.cta-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+footer{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:2rem 3rem;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-logo{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--teal)}
+.footer-logo span{color:var(--muted)}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--teal)}
+.footer-copy{font-family:'Fira Code',monospace;font-size:.7rem;color:var(--muted)}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  nav{padding:.8rem 1.5rem}
+  .nav-links{display:none}
+  .hero{grid-template-columns:1fr;padding:6rem 1.5rem 3rem}
+  .terminal{display:none}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  section{padding:4rem 1.5rem}
+  .flow-grid{grid-template-columns:1fr}
+  .soc-panel{display:none}
+  .stack-grid{grid-template-columns:1fr}
+  .road-grid{grid-template-columns:1fr 1fr}
+  footer{flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="https://ai.menarguez-ia.com/">Menarguez<span>-IA</span></a>
+  <ul class="nav-links">
+    <li><a href="#arquitectura">Arquitectura</a></li>
+    <li><a href="#flujo">Flujo</a></li>
+    <li><a href="#seguridad">Seguridad</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="https://ai.menarguez-ia.com/">Web principal</a></li>
+  </ul>
+  <a class="nav-btn" href="https://ai.menarguez-ia.com/contacto">Solicitar demo</a>
+</nav>
+
+<!-- HERO -->
+<div style="position:relative;z-index:1">
+<div class="hero">
+  <div class="hero-left">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      Agent Platform · v1.0 · Private AI Infrastructure
+    </div>
+    <h1>Tu agente IA<br><em>privado y seguro</em></h1>
+    <p class="hero-sub">
+      Arquitectura enterprise sobre tu propio homelab.<br>
+      Tailscale · Docker · SOC Logging · MITRE ATT&CK aware.<br>
+      Sin APIs públicas. Sin datos en la nube. 100% tuyo.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-p" href="https://ai.menarguez-ia.com/contacto">Activar Fase 1</a>
+      <a class="btn-g" href="#arquitectura">Ver arquitectura</a>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="term-win">
+      <div class="term-bar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span class="term-title">menarguez-agent · ssh vm-aislada</span>
+      </div>
+      <div class="term-body">
+        <div><span class="tc"># Estado del agente</span></div>
+        <div><span class="tk">$ </span><span class="tv">docker ps --format "{{.Names}}"</span></div>
+        <div><span class="tg">✓ agent-core</span></div>
+        <div><span class="tg">✓ n8n-orchestrator</span></div>
+        <div><span class="tg">✓ chroma-db</span></div>
+        <div><span class="tg">✓ caddy-proxy</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tc"># Último evento SOC</span></div>
+        <div><span class="tk">$ </span><span class="tv">tail -1 /var/log/agent/soc.log</span></div>
+        <div><span class="ta">{</span></div>
+        <div>&nbsp;&nbsp;<span class="tp">"action"</span><span class="tv">: "prospecting_run"</span><span class="ta">,</span></div>
+        <div>&nbsp;&nbsp;<span class="tp">"approved"</span><span class="tv">: true</span><span class="ta">,</span></div>
+        <div>&nbsp;&nbsp;<span class="tp">"leads"</span><span class="tv">: 14</span><span class="ta">,</span></div>
+        <div>&nbsp;&nbsp;<span class="tp">"status"</span><span class="tv">: </span><span class="tg">"ok"</span></div>
+        <div><span class="ta">}</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tk">$ </span><span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar" style="position:relative;z-index:1">
+  <div class="stat">
+    <div class="stat-n">5</div>
+    <div class="stat-l">capas de seguridad</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">7</div>
+    <div class="stat-l">pasos auditados</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">0</div>
+    <div class="stat-l">puertos abiertos</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n">&lt;7d</div>
+    <div class="stat-l">tiempo de arranque</div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE -->
+<section class="arch-section" id="arquitectura">
+  <div class="inner">
+    <div class="arch-header reveal">
+      <div class="stag">// arquitectura</div>
+      <h2 class="stitle">5 capas de <em>protección</em></h2>
+      <p class="ssub">Cada componente vive en su capa. Sin acceso directo entre ellos. Principio de mínimo privilegio en cada nivel.</p>
+    </div>
+
+    <div class="arch-layers reveal">
+      <div class="layer" style="--layer-color:#0d9488">
+        <div class="layer-num" style="color:#0d9488">01</div>
+        <div class="layer-body">
+          <div class="layer-title">Tailscale · VPN mesh privada</div>
+          <div class="layer-sub">Sin puertos abiertos · cifrado extremo a extremo · acceso solo desde tus dispositivos</div>
+        </div>
+        <div class="layer-badge" style="color:#0d9488">Red privada</div>
+      </div>
+      <div class="layer" style="--layer-color:#1d4ed8">
+        <div class="layer-num" style="color:#1d4ed8">02</div>
+        <div class="layer-body">
+          <div class="layer-title">Reverse Proxy · Caddy / Nginx</div>
+          <div class="layer-sub">HTTPS interno · routing controlado · sin exposición directa de servicios</div>
+        </div>
+        <div class="layer-badge" style="color:#1d4ed8">Acceso</div>
+      </div>
+      <div class="layer" style="--layer-color:#7c3aed">
+        <div class="layer-num" style="color:#7c3aed">03</div>
+        <div class="layer-body">
+          <div class="layer-title">Auth · Authentik / Authelia</div>
+          <div class="layer-sub">Solo tú puedes acceder · MFA · tokens de sesión auditados</div>
+        </div>
+        <div class="layer-badge" style="color:#7c3aed">Identidad</div>
+      </div>
+      <div class="layer" style="--layer-color:#d97706">
+        <div class="layer-num" style="color:#d97706">04</div>
+        <div class="layer-body">
+          <div class="layer-title">Docker aislado · VM dedicada</div>
+          <div class="layer-sub">Sin privilegios root · red interna Docker · sin acceso al socket del host</div>
+        </div>
+        <div class="layer-badge" style="color:#d97706">Ejecución</div>
+      </div>
+      <div class="layer" style="--layer-color:#059669">
+        <div class="layer-num" style="color:#059669">05</div>
+        <div class="layer-body">
+          <div class="layer-title">Control manual · Telegram Bot</div>
+          <div class="layer-sub">Cada acción requiere tu aprobación explícita · logs SOC de todo · cero autonomía sin supervisión</div>
+        </div>
+        <div class="layer-badge" style="color:#059669">Control</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLOW -->
+<section class="flow-section" id="flujo">
+  <div class="inner">
+    <div class="reveal">
+      <div class="stag">// flujo técnico</div>
+      <h2 class="stitle">Ciclo de vida de <em>una acción</em></h2>
+      <p class="ssub">Cada orden que recibe el agente pasa por 7 pasos verificados antes de ejecutarse. 100% auditable.</p>
+    </div>
+
+    <div class="flow-grid" style="margin-top:2.5rem">
+      <div class="flow-steps reveal">
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#0d9488">01</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Usuario envía orden</div>
+            <div class="fstep-desc">Telegram Bot recibe el mensaje de texto o comando</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#1d4ed8">02</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Agente recibe la orden</div>
+            <div class="fstep-desc">n8n / LangChain parsea la intención y estructura la tarea</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#7c3aed">03</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Motor IA analiza</div>
+            <div class="fstep-desc">Claude API razona, planifica y genera el plan de acción</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#d97706">04</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Valida permisos</div>
+            <div class="fstep-desc">Comprueba scope definido · rechaza automáticamente si excede</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#dc2626">05</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Docker Tool Runner</div>
+            <div class="fstep-desc">Ejecuta en contenedor aislado · sin acceso fuera del sandbox</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#059669">06</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Log SOC</div>
+            <div class="fstep-desc">Registra acción · prompt exacto · resultado · tiempo · aprobación</div>
+          </div>
+        </div>
+        <div class="fstep">
+          <div class="fstep-line">
+            <div class="fstep-num" style="--step-color:#0d9488">07</div>
+            <div class="fstep-connector"></div>
+          </div>
+          <div class="fstep-content">
+            <div class="fstep-title">Respuesta a Telegram</div>
+            <div class="fstep-desc">Confirmación + resultado enviado al usuario · huella completa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOC PANEL -->
+      <div class="soc-panel reveal">
+        <div class="soc-head">SOC LOG · en tiempo real</div>
+        <div class="soc-body">
+          <div class="soc-row"><span>ts</span><span>2025-05-06T14:32:11Z</span></div>
+          <div class="soc-row"><span>user</span><span>nacho@menarguez</span></div>
+          <div class="soc-row"><span>action</span><span>prospecting_run</span></div>
+          <div class="soc-row"><span>prompt</span><span>buscar clínicas Madrid</span></div>
+          <div class="soc-row"><span>approved</span><span style="color:#34d399">true</span></div>
+          <div class="soc-row"><span>scope</span><span style="color:#34d399">ok</span></div>
+          <div class="soc-row"><span>leads</span><span>14</span></div>
+          <div class="soc-row"><span>ms</span><span>2340</span></div>
+          <div class="soc-row"><span>status</span><span style="color:#34d399">success</span></div>
+        </div>
+        <div style="padding:.8rem 1rem;border-top:1px solid var(--border)">
+          <div style="font-family:'Fira Code',monospace;font-size:.68rem;color:var(--muted)">MITRE ATT&CK aware · Wazuh ready</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THREAT MODEL -->
+<section class="threat-section" id="seguridad">
+  <div class="inner">
+    <div class="reveal">
+      <div class="stag">// threat model</div>
+      <h2 class="stitle">Riesgos <em>mitigados</em></h2>
+      <p class="ssub">Cada vector de ataque identificado y neutralizado por la arquitectura antes de que el agente ejecute nada.</p>
+    </div>
+    <div class="threat-grid reveal">
+      <div class="threat-card" style="--tc:#dc2626">
+        <div class="threat-top">
+          <div class="threat-name">Fuga de credenciales</div>
+          <div class="threat-badge" style="background:#dc2626">CRÍTICO</div>
+        </div>
+        <div class="threat-attack">El agente extrae API keys o tokens del entorno de ejecución</div>
+        <div class="threat-fix">Secrets en variables de entorno · sin acceso al FS del host · mínimo privilegio</div>
+      </div>
+      <div class="threat-card" style="--tc:#d97706">
+        <div class="threat-top">
+          <div class="threat-name">Ejecución remota</div>
+          <div class="threat-badge" style="background:#d97706">ALTO</div>
+        </div>
+        <div class="threat-attack">Prompt injection fuerza comandos arbitrarios del sistema</div>
+        <div class="threat-fix">Tool Runner en contenedor aislado · sin shell · whitelist de herramientas permitidas</div>
+      </div>
+      <div class="threat-card" style="--tc:#d97706">
+        <div class="threat-top">
+          <div class="threat-name">Exposición a internet</div>
+          <div class="threat-badge" style="background:#d97706">ALTO</div>
+        </div>
+        <div class="threat-attack">El agente o sus servicios quedan accesibles públicamente</div>
+        <div class="threat-fix">Tailscale · sin puertos abiertos · red 100% privada · invisible en internet</div>
+      </div>
+      <div class="threat-card" style="--tc:#1d4ed8">
+        <div class="threat-top">
+          <div class="threat-name">Abuso de APIs</div>
+          <div class="threat-badge" style="background:#1d4ed8">MEDIO</div>
+        </div>
+        <div class="threat-attack">Uso excesivo o no autorizado de APIs externas (coste, datos)</div>
+        <div class="threat-fix">Rate limiting · whitelist de endpoints · log de cada llamada a API</div>
+      </div>
+      <div class="threat-card" style="--tc:#1d4ed8">
+        <div class="threat-top">
+          <div class="threat-name">Escalada de privilegios</div>
+          <div class="threat-badge" style="background:#1d4ed8">MEDIO</div>
+        </div>
+        <div class="threat-attack">El agente consigue acceso root o sudo dentro del sistema</div>
+        <div class="threat-fix">Usuario non-root en Docker · sin --privileged · AppArmor / seccomp activo</div>
+      </div>
+      <div class="threat-card" style="--tc:#059669">
+        <div class="threat-top">
+          <div class="threat-name">Movimiento lateral</div>
+          <div class="threat-badge" style="background:#059669">BAJO</div>
+        </div>
+        <div class="threat-attack">Desde el agente comprometido se accede a otros sistemas de la red</div>
+        <div class="threat-fix">Red interna Docker aislada · Tailscale ACLs · sin acceso al NAS ni LAN</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section class="stack-section">
+  <div class="inner">
+    <div class="reveal">
+      <div class="stag">// stack técnico</div>
+      <h2 class="stitle">Orquestación <em>híbrida</em></h2>
+      <p class="ssub">n8n para workflows locales · Make para integraciones cloud · FastAPI como núcleo inteligente.</p>
+    </div>
+    <div class="stack-grid reveal">
+      <div class="stack-cell" style="--sc:#0d9488">
+        <div class="stack-cat">Sistema base</div>
+        <div class="stack-items">
+          <div class="stack-item">Ubuntu Server 24.04</div>
+          <div class="stack-sub">VM aislada en PC principal</div>
+          <div class="stack-item">Docker Compose</div>
+          <div class="stack-sub">Orquestación de contenedores</div>
+        </div>
+      </div>
+      <div class="stack-cell" style="--sc:#14b8a6">
+        <div class="stack-cat">Red y acceso</div>
+        <div class="stack-items">
+          <div class="stack-item">Tailscale</div>
+          <div class="stack-sub">VPN mesh privada · sin puertos</div>
+          <div class="stack-item">Caddy</div>
+          <div class="stack-sub">Reverse proxy · HTTPS interno</div>
+        </div>
+      </div>
+      <div class="stack-cell" style="--sc:#1d4ed8">
+        <div class="stack-cat">Orquestación</div>
+        <div class="stack-items">
+          <div class="stack-item">n8n</div>
+          <div class="stack-sub">Workflows locales · visual</div>
+          <div class="stack-item">Make</div>
+          <div class="stack-sub">Integraciones cloud · APIs</div>
+        </div>
+      </div>
+      <div class="stack-cell" style="--sc:#7c3aed">
+        <div class="stack-cat">Núcleo inteligente</div>
+        <div class="stack-items">
+          <div class="stack-item">FastAPI</div>
+          <div class="stack-sub">Motor de decisiones · webhooks</div>
+          <div class="stack-item">Claude API</div>
+          <div class="stack-sub">Razonamiento · planificación</div>
+        </div>
+      </div>
+      <div class="stack-cell" style="--sc:#d97706">
+        <div class="stack-cat">Memoria y datos</div>
+        <div class="stack-items">
+          <div class="stack-item">Chroma / Qdrant</div>
+          <div class="stack-sub">Vector DB local · memoria</div>
+          <div class="stack-item">Google Sheets</div>
+          <div class="stack-sub">CRM leads · métricas</div>
+        </div>
+      </div>
+      <div class="stack-cell" style="--sc:#059669">
+        <div class="stack-cat">Seguridad y logs</div>
+        <div class="stack-items">
+          <div class="stack-item">Wazuh</div>
+          <div class="stack-sub">SIEM · alertas SOC · MITRE</div>
+          <div class="stack-item">Authentik</div>
+          <div class="stack-sub">Auth · MFA · sesiones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="road-section" id="roadmap">
+  <div class="inner">
+    <div class="reveal">
+      <div class="stag">// roadmap</div>
+      <h2 class="stitle">4 fases de <em>implementación</em></h2>
+      <p class="ssub">De cero a agente autónomo en 3 meses. Sin quemar etapas. Sin comprometer la seguridad.</p>
+    </div>
+    <div class="road-grid reveal">
+      <div class="road-phase" style="--rp:#0d9488">
+        <div class="road-phase-head">
+          <div class="road-fase">Fase 1</div>
+          <div class="road-periodo">Semanas 1-2</div>
+        </div>
+        <div class="road-title">Infraestructura segura</div>
+        <div class="road-items">
+          <div class="road-item">VM aislada + Docker</div>
+          <div class="road-item">Tailscale instalado</div>
+          <div class="road-item">Caddy reverse proxy</div>
+          <div class="road-item">Agente solo lectura</div>
+        </div>
+      </div>
+      <div class="road-phase" style="--rp:#1d4ed8">
+        <div class="road-phase-head" style="background:#1d4ed8">
+          <div class="road-fase">Fase 2</div>
+          <div class="road-periodo">Semanas 3-4</div>
+        </div>
+        <div class="road-title">Agente semiautónomo</div>
+        <div class="road-items" style="--rp:#1d4ed8">
+          <div class="road-item" style="--rp:#1d4ed8">Aprobación Telegram</div>
+          <div class="road-item" style="--rp:#1d4ed8">Gmail controlado</div>
+          <div class="road-item" style="--rp:#1d4ed8">CRM en Sheets</div>
+          <div class="road-item" style="--rp:#1d4ed8">Logs SOC activos</div>
+        </div>
+      </div>
+      <div class="road-phase" style="--rp:#7c3aed">
+        <div class="road-phase-head" style="background:#7c3aed">
+          <div class="road-fase">Fase 3</div>
+          <div class="road-periodo">Mes 2</div>
+        </div>
+        <div class="road-title">Automatización controlada</div>
+        <div class="road-items" style="--rp:#7c3aed">
+          <div class="road-item" style="--rp:#7c3aed">Authentik activo</div>
+          <div class="road-item" style="--rp:#7c3aed">Prospección · Make</div>
+          <div class="road-item" style="--rp:#7c3aed">Memoria · vector DB</div>
+          <div class="road-item" style="--rp:#7c3aed">Dashboard métricas</div>
+        </div>
+      </div>
+      <div class="road-phase" style="--rp:#d97706">
+        <div class="road-phase-head" style="background:#d97706">
+          <div class="road-fase">Fase 4</div>
+          <div class="road-periodo">Mes 3+</div>
+        </div>
+        <div class="road-title">Agentes autónomos</div>
+        <div class="road-items" style="--rp:#d97706">
+          <div class="road-item" style="--rp:#d97706">Multi-agente coordinado</div>
+          <div class="road-item" style="--rp:#d97706">OSINT automatizado</div>
+          <div class="road-item" style="--rp:#d97706">Pipeline ventas completo</div>
+          <div class="road-item" style="--rp:#d97706">SOC integrado</div>
+        </div>
+      </div>
+    </div>
+    <p style="font-family:'Fira Code',monospace;font-size:.75rem;color:var(--muted);margin-top:1.2rem;text-align:center">
+      Regla: no avanzar de fase hasta que los logs de la anterior estén limpios durante 7 días consecutivos
+    </p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="inner reveal">
+    <h2 class="cta-title">¿Activamos la<br><em>Fase 1</em> esta semana?</h2>
+    <p class="cta-sub">
+      VM aislada · Docker · Tailscale · n8n · FastAPI<br>
+      Operativo y auditado en menos de 7 días.
+    </p>
+    <div class="cta-actions">
+      <a class="btn-p" href="https://ai.menarguez-ia.com/contacto">Solicitar demo gratuita</a>
+      <a class="btn-g" href="https://ai.menarguez-ia.com/">Volver a la web principal</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Menarguez<span>-IA Agent Platform</span></div>
+  <div class="footer-links">
+    <a href="https://ai.menarguez-ia.com/">Web principal</a>
+    <a href="https://ai.menarguez-ia.com/contacto">Contacto</a>
+    <a href="https://www.linkedin.com/in/ignaciomenarguezfernandez/">LinkedIn</a>
+  </div>
+  <div class="footer-copy">© 2025 Menarguez-IA Solutions · Ignacio Menárguez Fernández</div>
+</footer>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible') });
+}, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
